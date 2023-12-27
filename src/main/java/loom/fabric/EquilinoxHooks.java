@@ -9,9 +9,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class EquilinoxHooks {
-    public static void initMods() {
+    public static final String INTERNAL_NAME = EquilinoxHooks.class.getName().replace('.', '/');
+
+    public static void init() {
         Path runDir = Paths.get(".");
+
         FabricLoaderImpl.INSTANCE.prepareModInit(runDir, FabricLoaderImpl.INSTANCE.getGameInstance());
+
         EntrypointUtils.invoke("main", ModInitializer.class, ModInitializer::onInitialize);
         EntrypointUtils.invoke("client", ClientModInitializer.class, ClientModInitializer::onInitializeClient);
     }

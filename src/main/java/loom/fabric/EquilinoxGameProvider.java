@@ -23,10 +23,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.zip.ZipFile;
 
 public class EquilinoxGameProvider implements GameProvider {
-    public static final String ENTRY_POINT = "main.MainApp";
+    public static final String ENTRY_POINT = "main.MainApp", API = "loom-api-0.1.0.jar";
 
     private Arguments arguments;
 
@@ -35,7 +35,7 @@ public class EquilinoxGameProvider implements GameProvider {
     String entrypoint;
 
     private static final StringVersion gameVersion = new StringVersion("1.0.0");
-    private static final GameTransformer TRANSFORMER = new GameTransformer(new LoomPatch());
+    private static final GameTransformer TRANSFORMER = new GameTransformer(new EquilinoxEntryPointPatch());
 
     @Override
     public String getGameId() {
@@ -59,7 +59,7 @@ public class EquilinoxGameProvider implements GameProvider {
 
     @Override
     public Collection<BuiltinMod> getBuiltinMods() {
-        HashMap<String, String> contactInfo = new HashMap<>();
+        Map<String, String> contactInfo = new HashMap<>();
         contactInfo.put("github", "https://github.com/EquilinoxLoom/Loom");
 
         BuiltinModMetadata.Builder equilinoxMetadata =
@@ -69,7 +69,10 @@ public class EquilinoxGameProvider implements GameProvider {
                         .setContact(new ContactInformationImpl(contactInfo))
                         .setDescription("A sandbox evolution game.");
 
-        return Collections.singletonList(new BuiltinMod(Collections.singletonList(gameJar), equilinoxMetadata.build()));
+        List<Path> mods = new ArrayList<>();
+        mods.add(gameJar); mods.add(Paths.get(".", API));
+
+        return Collections.singletonList(new BuiltinMod(mods, equilinoxMetadata.build()));
     }
 
     @Override
@@ -105,50 +108,57 @@ public class EquilinoxGameProvider implements GameProvider {
         this.arguments = new Arguments();
         this.arguments.parse(args);
 
-        List<String> gameLocations = new ArrayList<>();
-        if (System.getProperty(SystemProperties.GAME_JAR_PATH) != null) {
-            gameLocations.add(System.getProperty(SystemProperties.GAME_JAR_PATH));
-        }
-        gameLocations.add("./input.jar");
-        gameLocations.add("./EquilinoxWindows.jar");
-        gameLocations.add("./EquilinoxLinux.jar");
+        Map<Path, ZipFile> zipFiles = new HashMap<>();
 
-        List<Path> jarPaths = gameLocations.stream()
-                .map(path -> Paths.get(path).toAbsolutePath().normalize())
-                .filter(Files::exists).collect(Collectors.toList());
+        try {
+            GameProviderHelper.FindResult result = null;
 
-        GameProviderHelper.FindResult result = GameProviderHelper.findFirst(jarPaths, new HashMap<>(), true, ENTRY_POINT);
+            List<String> gameLocations = new ArrayList<>();
+            if (System.getProperty(SystemProperties.GAME_JAR_PATH) != null) {
+                gameLocations.add(System.getProperty(SystemProperties.GAME_JAR_PATH));
+            }
+            gameLocations.add("./input.jar");
+            gameLocations.add("./EquilinoxWindows.jar");
+            gameLocations.add("./EquilinoxLinux.jar");
 
-        if (result == null || result.path == null) {
-            Log.error(LogCategory.GAME_PROVIDER, "Could not locate game. Looked at: \n" + gameLocations.stream()
-                    .map(path -> " - " + Paths.get(path).toAbsolutePath().normalize())
-                    .collect(Collectors.joining("\n")));
-            return false;
+            List<Path> jarPaths = gameLocations.stream()
+                    .map(path -> Paths.get(path).toAbsolutePath().normalize())
+                    .filter(Files::exists).toList();
+
+            result = GameProviderHelper.findFirst(jarPaths, zipFiles, true, ENTRY_POINT);
+
+            if (result == null) return false;
+
+            entrypoint = result.name;
+            gameJar = result.path;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
 
         String os = System.getProperty("os.name").toLowerCase();
         File natives = new File("./natives");
         if (os.contains("win")) {
-            if (natives.mkdir()) Log.log(LogLevel.INFO, LogCategory.LOG, "Created natives file.");
-            createNative(natives, "jinput-dx8.dll", "jinput-dx8_64.dll", "jinput-raw.dll", "jinput-raw_64.dll",
+            if (natives.mkdir()) Log.log(LogLevel.INFO, LogCategory.GAME_PROVIDER, "Created natives folder");
+            extract(natives, "jinput-dx8.dll", "jinput-dx8_64.dll", "jinput-raw.dll", "jinput-raw_64.dll",
                     "lwjgl.dll", "lwjgl64.dll", "OpenAL32.dll", "OpenAL64.dll");
         } else if (os.contains("mac")) {
-            if (natives.mkdir()) Log.log(LogLevel.INFO, LogCategory.LOG, "Created natives file.");
-            createNative(natives, "libjinput-osx.dylib", "liblwjgl.dylib", "openal.dylib");
+            if (natives.mkdir()) Log.log(LogLevel.INFO, LogCategory.GAME_PROVIDER, "Created natives folder");
+            extract(natives, "libjinput-osx.dylib", "liblwjgl.dylib", "openal.dylib");
         }
 
         System.setProperty("org.lwjgl.librarypath", natives.getAbsolutePath());
 
-        entrypoint = result.name;
-        gameJar = result.path;
+        extract(natives, API);
+
         processArgumentMap(arguments);
+
         return true;
     }
 
-    private void createNative(File natives, String... names) {
+    private void extract(File folder, String... names) {
         for (String name : names) {
             try {
-                File file = new File(natives, name);
+                File file = new File(folder, name);
                 if (!file.exists()) {
                     InputStream resource = getClass().getResourceAsStream(name);
                     if (resource == null) break;
@@ -207,6 +217,7 @@ public class EquilinoxGameProvider implements GameProvider {
         }
 
         if (writeIdx < ret.length) ret = Arrays.copyOf(ret, writeIdx);
+
         return ret;
     }
 
