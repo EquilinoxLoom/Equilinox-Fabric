@@ -1,4 +1,4 @@
-package loom.mixin;
+package loom.mixins;
 
 import fontRendering.Text;
 import gameMenu.DnaButtonGui;

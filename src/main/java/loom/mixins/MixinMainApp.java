@@ -1,4 +1,4 @@
-package loom.mixin;
+package loom.mixins;
 
 import main.MainApp;
 import net.fabricmc.loader.api.FabricLoader;

@@ -1,9 +1,18 @@
 {
   "required": true,
-  "package": "loom.mixin",
+  "package": "loom.mixins",
   "compatibilityLevel": "JAVA_18",
   "mixins": [
+    "MixinGameMenuGui",
     "MixinMainApp",
-    "MixinMenuPanelGui"
+    "MixinMenuPanelGui",
+    "clearlog.MixinDynamicMemoryManager",
+    "clearlog.MixinMutator",
+    "clearlog.MixinOpenGlError",
+    "clearlog.MixinSaveSlot",
+    "clearlog.MixinSoundLoader",
+    "clearlog.MixinStreamer",
+    "clearlog.MixinTextLoader",
+    "clearlog.MixinWorldLoader"
   ]
 }
