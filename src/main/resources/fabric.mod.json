@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "id": "loom-equilinox-loader",
+  "version": "0.1.0",
+  "environment": "*",
+  "mixins": [
+    "mixins.loom-loader.json"
+  ],
+  "depends": {
+    "fabricloader": "*"
+  }
+}

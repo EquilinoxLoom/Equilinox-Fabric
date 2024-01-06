@@ -1,0 +1,9 @@
+{
+  "required": true,
+  "package": "loom.mixin",
+  "compatibilityLevel": "JAVA_18",
+  "mixins": [
+    "MixinMainApp",
+    "MixinMenuPanelGui"
+  ]
+}
