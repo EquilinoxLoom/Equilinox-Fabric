@@ -1,4 +1,4 @@
-package loom;
+package sandals.loader;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,12 +14,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class Main {
+public class Loader {
     private static final Path THIS;
 
     static {
         try {
-            THIS = Paths.get(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+            THIS = Paths.get(Loader.class.getProtectionDomain().getCodeSource().getLocation().toURI());
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
@@ -50,6 +50,7 @@ public class Main {
     }
 
     private static final Path LIB = GAME_DIR.resolve("libraries");
+    public static final Path NATIVES = LIB.resolve("sandals/loader");
 
     private static final Path[] DEPENDENCIES;
 
@@ -74,20 +75,19 @@ public class Main {
     private static int iterations = 0;
     public static void main(String[] args) {
         if (intact()) {
-            System.out.println("Running fabric equilinox");
-
-            String natives = LIB.resolve("loom").toAbsolutePath().normalize().toString();
+            log("Running fabric equilinox");
 
             try {
                 List<String> libraries = Arrays.stream(DEPENDENCIES).map(LIB::resolve).map(Path::normalize).map(Path::toString).toList();
+
                 ProcessBuilder processBuilder = new ProcessBuilder(
                         "java",
                         "-Dhttps.protocols=TLSv1.2,TLSv1.1,TLSv1",
                         "-XX:+ShowCodeDetailsInExceptionMessages",
                         "-Dfabric.skipMcProvider=true",
                         "-Dfabric.side=client",
-                        "-Djava.library.path=" + natives,
-                        "-Dorg.lwjgl.librarypath=" + natives,
+                        "-Djava.library.path=" + NATIVES.toAbsolutePath().normalize(),
+                        "-Dorg.lwjgl.librarypath=" + NATIVES.toAbsolutePath().normalize(),
                         "-Dfabric.debug.disableClassPathIsolation",
                         "-Dfabric.addMods=" + THIS.toAbsolutePath().normalize(),
                         "-cp",
@@ -109,7 +109,7 @@ public class Main {
             }
         }
         else {
-            System.out.println("Running equilinox fabric installer");
+            log("Running equilinox fabric installer");
             try {
                 install();
             } catch (Exception e) {
@@ -140,7 +140,7 @@ public class Main {
                 return false;
             }
         }
-        return Files.exists(LIB.resolve("loom"));
+        return Files.exists(NATIVES);
     }
 
     private static void install() throws IOException {
@@ -159,7 +159,7 @@ public class Main {
                     .resolve(file.substring(last + 1).replace(".jar", ""))
                     .resolve(file).toString().replace("\\", "/");
 
-            System.out.println("Downloading dependency " + file + " from " + url);
+            log("Downloading dependency " + file + " from " + url);
             destination = LIB.resolve(destination);
             Files.createDirectories(destination);
 
@@ -168,26 +168,25 @@ public class Main {
             } catch (URISyntaxException ignored) {}
         }
 
-        System.out.println("Done!");
+        log("Done!");
     }
 
     private static void extractNatives(String... resources) {
-        Path dir = LIB.resolve("loom");
         for (String resource : resources) {
             if (resource == null || resource.isEmpty()) {
-                System.out.println("Null resource can't be extracted");
+                log("Null resource can't be extracted");
                 continue;
             }
-            InputStream stream = Main.class.getResourceAsStream("/natives/" + resource);
+            InputStream stream = Loader.class.getResourceAsStream("/natives/" + resource);
             try {
-                Files.createDirectories(dir);
+                Files.createDirectories(NATIVES);
             } catch (IOException e) {
                 continue;
             }
-            Path path = dir.resolve(resource);
+            Path path = NATIVES.resolve(resource);
 
             if (stream == null) {
-                System.out.println("File " + resource + "not found");
+                log("File " + resource + "not found");
                 continue;
             }
 
@@ -196,5 +195,9 @@ public class Main {
                 stream.close();
             } catch (IOException ignored) {}
         }
+    }
+
+    private static void log(String msg) {
+        System.out.printf("[%tT] [%s/%s]: %s%n", System.currentTimeMillis(), "FabricLoader", "GameProvider", msg);
     }
 }

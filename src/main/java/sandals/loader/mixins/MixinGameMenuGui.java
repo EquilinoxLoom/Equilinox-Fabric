@@ -1,4 +1,4 @@
-package loom.mixins;
+package sandals.loader.mixins;
 
 import gameMenu.GameMenuGui;
 import guis.GuiComponent;

@@ -1,4 +1,4 @@
-package loom.mixins.clearlog;
+package sandals.loader.mixins.clearlog;
 
 import audio.SoundLoader;
 import org.spongepowered.asm.mixin.Mixin;
@@ -10,11 +10,11 @@ import java.io.PrintStream;
 @Mixin(value = SoundLoader.class, remap = false)
 public class MixinSoundLoader {
   @Redirect(method = "doInitialSoundLoad", at = @At(value = "INVOKE", target = "Ljava/io/PrintStream;println(Ljava/lang/String;)V", remap = false))
-  private static void doInitialSoundLoad(PrintStream printStream, String x) {}
-  
+  private static void clearLog_0(PrintStream printStream, String x) {}
+
   @Redirect(method = "cleanUp", at = @At(value = "INVOKE", target = "Ljava/io/PrintStream;println(Ljava/lang/String;)V", remap = false))
-  private static void cleanUp(PrintStream printStream, String x) {}
+  private static void clearLog_1(PrintStream printStream, String x) {}
   
   @Redirect(method = "loadSoundDataIntoBuffer", at = @At(value = "INVOKE", target = "Ljava/io/PrintStream;println(Ljava/lang/String;)V", remap = false))
-  private static void loadSoundDataIntoBuffer(PrintStream printStream, String x) {}
+  private static void clearLog_2(PrintStream printStream, String x) {}
 }

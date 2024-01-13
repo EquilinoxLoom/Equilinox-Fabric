@@ -1,4 +1,4 @@
-package loom.fabric;
+package sandals.loader.fabric;
 
 import net.fabricmc.loader.impl.game.GameProvider;
 import net.fabricmc.loader.impl.game.GameProviderHelper;

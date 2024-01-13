@@ -1,4 +1,4 @@
-package loom.mixins.clearlog;
+package sandals.loader.mixins.clearlog;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -10,5 +10,5 @@ import java.io.PrintStream;
 @Mixin(value = WorldLoader.class, remap = false)
 public class MixinWorldLoader {
   @Redirect(method = "generateHeights", at = @At(value = "INVOKE", target = "Ljava/io/PrintStream;println(Ljava/lang/String;)V", remap = false))
-  private static void generateHeights(PrintStream printStream, String x) {}
+  private static void clearLog(PrintStream printStream, String x) {}
 }

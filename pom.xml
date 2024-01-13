@@ -3,9 +3,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>loom</groupId>
-    <artifactId>Equilinox-Fabric</artifactId>
-    <version>0.1.0</version>
+    <groupId>sandals</groupId>
+    <artifactId>EquilinoxFabric</artifactId>
+    <version>beta-1</version>
 
     <repositories>
         <repository>
@@ -41,7 +41,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>loom.Main</mainClass>
+                            <mainClass>sandals.loader.Loader</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -82,6 +82,11 @@
             <groupId>net.fabricmc</groupId>
             <artifactId>sponge-mixin</artifactId>
             <version>0.12.5+mixin.0.8.5</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.llamalad7</groupId>
+            <artifactId>mixinextras-fabric</artifactId>
+            <version>0.3.2</version>
         </dependency>
         <dependency>
             <groupId>net.fabricmc</groupId>

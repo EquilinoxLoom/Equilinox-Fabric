@@ -1,4 +1,4 @@
-package loom.mixins.clearlog;
+package sandals.loader.mixins.clearlog;
 
 import components.Mutator;
 import org.spongepowered.asm.mixin.Mixin;
@@ -9,6 +9,6 @@ import java.io.PrintStream;
 
 @Mixin(value = {Mutator.class}, remap = false)
 public class MixinMutator {
-    @Redirect(method = {"load"}, at = @At(value = "INVOKE", target = "Ljava/io/PrintStream;println(Ljava/lang/String;)V", remap = false))
-    private static void load(PrintStream printStream, String x) {}
+    @Redirect(method = "load", at = @At(value = "INVOKE", target = "Ljava/io/PrintStream;println(Ljava/lang/String;)V", remap = false))
+    private static void clearLog(PrintStream instance, String x) {}
 }

@@ -1,4 +1,4 @@
-package loom.mixins;
+package sandals.loader.mixins;
 
 import fontRendering.Text;
 import gameMenu.DnaButtonGui;
@@ -39,11 +39,12 @@ public abstract class MixinMenuPanelGui extends GuiComponent {
     @Shadow private DnaButtonGui addButton(int index, GuiTexture line, String text, ClickListener listener) { return null; }
 
     @Inject(method = "init", at = @At(value = "INVOKE", target = "LgameMenu/MenuPanelGui;updateNewWorldButton()V", shift = At.Shift.BEFORE))
-    private void init(CallbackInfo ci) {
+    private void addModsTab(CallbackInfo ci) {
         final Colour MOD_NAME = ColourPalette.DARK_GREY;
         final Colour MOD_TEXT = ColourPalette.MIDDLE_GREY;
 
         final float x = 0.15f;
+        final int breakDesc = (int) (((0.25f - x) * 200) + 105);
 
         ClickListener listener = event -> { if (event.isLeftClick()) { gameMenu.setNewSecondaryScreen(
                 new GuiPanel(GameMenuBackground.getStandardColour(), 0.65F) {
@@ -54,31 +55,35 @@ public abstract class MixinMenuPanelGui extends GuiComponent {
                         backButton.addListener(event -> {
                             if (event.isLeftClick()) gameMenu.closeSecondaryScreen();
                         });
-                        float yPos = 0.1F;
+                        float y = 0.1F;
                         Iterator<ModContainer> iterator = FabricLoaderImpl.INSTANCE.getAllMods().iterator();
                         while (iterator.hasNext()) {
                             ModContainer mod = iterator.next();
                             ModMetadata data = mod.getMetadata();
-                            float nameWidth = addText(data.getName(), 0.9F, MOD_NAME, x, yPos, 1).getActualWidth();
-                            addText(data.getVersion().getFriendlyString(), 0.8f, MOD_TEXT, x + nameWidth + 0.025f, yPos + 0.01f, 0.8f);
-                            yPos += 0.05F;
+                            float nameWidth = addText(data.getName(), 0.9F, MOD_NAME, x, y, 1).getActualWidth();
+                            addText(data.getVersion().getFriendlyString(), 0.8f, MOD_TEXT, x + nameWidth + 0.025f, y + 0.01f, 0.8f);
+                            y += 0.05F;
                             String description = data.getDescription();
-                            if (description.length() < 105) {
-                                addText(description, 0.8f, MOD_TEXT, x, yPos, 0.8f);
+                            if (description.length() < breakDesc) {
+                                addText(description, 0.8f, MOD_TEXT, x, y, 0.8f);
                             } else {
                                 String[] tokens = description.split(" ");
                                 StringJoiner s1 = new StringJoiner(" ");
                                 StringJoiner s2 = new StringJoiner(" ");
                                 for (String token : tokens) {
-                                    if (s1.length() + token.length() < 105) s1.add(token);
+                                    if (s1.length() + token.length() < breakDesc) s1.add(token);
                                     else s2.add(token);
                                 }
-                                addText(s1.toString(), 0.8f, MOD_TEXT, x, yPos, 0.8f);
-                                yPos += 0.04F;
-                                addText(s2.toString(), 0.8f, MOD_TEXT, x, yPos, 0.8f);
+                                addText(s1.toString(), 0.8f, MOD_TEXT, x, y, 0.8f);
+                                y += 0.04F;
+                                addText(s2.toString(), 0.8f, MOD_TEXT, x, y, 0.8f);
                             }
-                            yPos += 0.065F;
-                            if (iterator.hasNext()) addComponent(new GuiImage(GuiRepository.BLOCK), 0.19F, yPos - 0.01F, 0.62F, pixelsToRelativeY(1.0F));
+                            y += 0.065F;
+                            if (iterator.hasNext()) {
+                                float f = (0.25F / x);
+                                f = (f - 1) / 2 + 1;
+                                addComponent(new GuiImage(GuiRepository.BLOCK), 0.19F * (x / 0.25F), y - 0.01F, 0.62F * f, pixelsToRelativeY(1.0F));
+                            }
                         }
                     }
 
