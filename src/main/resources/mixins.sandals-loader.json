@@ -10,6 +10,7 @@
     "MixinMainApp",
     "MixinMenuPanelGui",
     "bypass.MixinBinaryReader",
+    "bypass.MixinGuiComponent",
     "bypass.MixinMousePicker",
     "clearlog.MixinDynamicMemoryManager",
     "clearlog.MixinGameState",
